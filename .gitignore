@@ -1,0 +1,29 @@
+# Compiled files
+target/
+*.class
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+application-local.properties
+application-dev.properties
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Maven wrapper (keep if you want, or ignore)
+# !mvnw
+# !mvnw.cmd
+# !.mvn/wrapper/
