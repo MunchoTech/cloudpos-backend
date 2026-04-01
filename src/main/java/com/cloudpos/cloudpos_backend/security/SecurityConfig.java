@@ -1,4 +1,4 @@
-package com.cloudpos.cloudpos_backend.config;
+package com.cloudpos.cloudpos_backend.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,11 +15,11 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                        // Public endpoints - no auth needed
+                        // Public endpoints - no auth needed (ALL requestMatchers FIRST)
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Product endpoints - allow for now (we'll add auth later)
                         .requestMatchers("/api/products/**").permitAll()
-                        // All other requests need authentication
+                        .requestMatchers("/api/categories/**").permitAll()
+                        // ANY other request needs authentication (LAST)
                         .anyRequest().authenticated()
                 )
                 .httpBasic(httpBasic -> httpBasic.disable())
