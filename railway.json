@@ -2,10 +2,10 @@
   "$schema": "https://schema.railway.app/config-as-code.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "cd backend && ./mvnw clean package -DskipTests"
+    "buildCommand": "./mvnw clean package -DskipTests"
   },
   "deploy": {
-    "startCommand": "java -jar backend/target/*.jar",
+    "startCommand": "java -jar target/*.jar",
     "restartPolicyType": "ON_FAILURE"
   }
 }
