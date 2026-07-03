@@ -86,7 +86,10 @@ export default function POS() {
     }
     try {
       const res = await salesService.processSale(salePayload())
-      if (res.success) { setReceipt(res.data); clearCart(); toast.success('Sale recorded!') }
+      if (res.success) { setReceipt(res.data); clearCart(); toast.success('Sale recorded!')
+            productService.getAll()
+                  .then(r => setProducts(r.data || []))
+                  .catch(() => {})}
     } catch (err) {
       toast.error(err.response?.data?.message || 'Sale failed — please try again')
     } finally { setCheckout(false) }

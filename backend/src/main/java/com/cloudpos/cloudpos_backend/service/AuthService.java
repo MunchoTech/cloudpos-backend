@@ -1,12 +1,14 @@
 package com.cloudpos.cloudpos_backend.service;
 
-
+import com.cloudpos.cloudpos_backend.dto.JwtResponse;
 import com.cloudpos.cloudpos_backend.dto.RegisterRequest;
 import com.cloudpos.cloudpos_backend.model.Role;
 import com.cloudpos.cloudpos_backend.model.Tenant;
 import com.cloudpos.cloudpos_backend.model.User;
 import com.cloudpos.cloudpos_backend.repository.UserRepository;
+import com.cloudpos.cloudpos_backend.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,43 +20,48 @@ public class AuthService {
     @Autowired
     private TenantService tenantService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
     public User registerUser(RegisterRequest request) {
-        // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered");
         }
 
-        // Create tenant first
         Tenant tenant = tenantService.createTenant(
                 request.getBusinessName(),
                 request.getEmail()
         );
 
-        // Create user
         User user = new User();
         user.setFullName(request.getFullName());
         user.setBusinessName(request.getBusinessName());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword()); // We'll hash this later
+        user.setPassword(passwordEncoder.encode(request.getPassword())); // Hash password
         user.setRole(Role.BUSINESS_OWNER);
 
         return userRepository.save(user);
     }
 
-    public User authenticateUser(String email, String password) {
+    public JwtResponse authenticateUser(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Check subscription status
         if (!tenantService.isSubscriptionActive(email)) {
             throw new RuntimeException("Subscription expired or inactive");
         }
 
-        // Check password (we'll add hashing later)
-        if (!user.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
 
-        return user;
+        // Generate JWT token
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().toString());
+
+        return new JwtResponse(token, user.getId(), user.getEmail(),
+                user.getFullName(), user.getBusinessName(), user.getRole().toString());
     }
 }
